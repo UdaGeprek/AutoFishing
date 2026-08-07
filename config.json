@@ -1,0 +1,74 @@
+{
+    "water_region": {
+        "top": 230,
+        "left": 791,
+        "width": 106,
+        "height": 100
+    },
+    "bar_region": {
+        "left": 832,
+        "top": 538,
+        "width": 250,
+        "height": 29
+    },
+    "cast_power_time": 0.1,
+    "hsv": {
+        "lower_float": [
+            75,
+            45,
+            43
+        ],
+        "upper_float": [
+            137,
+            185,
+            178
+        ],
+        "lower_zone": [
+            34,
+            113,
+            54
+        ],
+        "upper_zone": [
+            58,
+            249,
+            192
+        ]
+    },
+    "auto_hsv": {
+        "h_tol": 31,
+        "s_tol": 70,
+        "v_tol": 69,
+        "adaptive_float": true,
+        "adaptive_zone": true
+    },
+    "minigame": {
+        "target_pct": 53,
+        "danger_left_pct": 25,
+        "danger_right_pct": 67
+    },
+    "cast_point": {
+        "x": 820,
+        "y": 281,
+        "use_custom": true
+    },
+    "auto_cast_power": true,
+    "bot_mode": "semi_auto",
+    "bite_sensitivity": 1,
+    "audio": {
+        "enabled": true,
+        "device_index": 2,
+        "threshold": 10.0,
+        "cooldown": 0.5,
+        "sensitivity": 100
+    },
+    "network": {
+        "enabled": false,
+        "interface": "WiFi"
+    },
+    "multi_spots": [],
+    "auto_bait": {
+        "enabled": false,
+        "hotkey": "1",
+        "cast_count": 12
+    }
+}
