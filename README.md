@@ -136,7 +136,7 @@ AutoFishing/
 
 ## License & contributions
 
-MIT License — see [LICENSE](LICENSE).
+PolyForm Noncommercial License 1.0.0 — free for personal and noncommercial use only; **commercial use is not permitted**. See [LICENSE](LICENSE).
 
 Bug fixes and documentation PRs welcome.
 
