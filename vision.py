@@ -25,16 +25,14 @@ class Vision:
             mask = cv2.inRange(hsv, lower_color, upper_color)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+            
         for cnt in contours:
             area = cv2.contourArea(cnt)
-
             if is_float:
-                if 75 < area < 400:
+                if 30 < area < 800:  # Relaxed area so it doesn't lose the bobber easily, but ignores tiny splashes
                     x, y, w, h = cv2.boundingRect(cnt)
-                    solidity = float(area) / (w * h)
-                    if solidity > 0.25 and w < 35 and h < 35:
-                        return (x + w // 2, y + h // 2), (x, y, w, h)
+                    return (x + w // 2, y + h // 2), (x, y, w, h)
             else:
                 if 20 < area < 500:
                     x, y, w, h = cv2.boundingRect(cnt)

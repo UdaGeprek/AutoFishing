@@ -1,0 +1,5 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+mss>=9.0.0
+PyQt6>=6.5.0
+pyqtdarktheme>=2.1.0
