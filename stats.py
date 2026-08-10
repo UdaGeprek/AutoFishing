@@ -2,13 +2,10 @@ import json
 import os
 import time
 
-
 STATS_FILE = "stats.json"
 
 
 class StatsTracker:
-    """Pelacak statistik sesi dan total tangkapan."""
-
     def __init__(self):
         self.session_start = time.time()
         self.session_catches = 0
@@ -62,7 +59,6 @@ class StatsTracker:
             elapsed_str = f"{hours}j {mins}m"
         else:
             elapsed_str = f"{mins}m {secs}d"
-
         return {
             "session_catches": self.session_catches,
             "total_catches": self.total_catches,

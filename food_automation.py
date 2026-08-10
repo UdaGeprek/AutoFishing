@@ -4,8 +4,6 @@ from input_control import InputHandler
 
 
 class FoodManager:
-    """Memakai makanan secara berkala lewat tombol keyboard."""
-
     def __init__(self, config, log_fn=None):
         self.config = config
         self._log = log_fn or (lambda _msg: None)
@@ -28,6 +26,6 @@ class FoodManager:
             return
         self._last_eat = time.time()
         hotkey = str(cfg.get("hotkey", "2"))
-        self._log(f"[🍖 MAKAN] Memakai makanan (tombol «{hotkey}») — interval {minutes} menit.")
+        self._log(f"[FOOD] Eating (key '{hotkey}') every {minutes} min.")
         InputHandler.press_key(hotkey)
         time.sleep(0.6)

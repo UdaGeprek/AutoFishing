@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# App runtime data
+profiles/
+stats.json
+
+# IDE
+.idea/
+.vscode/

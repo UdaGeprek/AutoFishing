@@ -9,14 +9,13 @@ class RegionSelector(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.Tool
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Tool
         )
         self.setWindowState(Qt.WindowState.WindowFullScreen)
         self.setWindowOpacity(0.35)
         self.setCursor(Qt.CursorShape.CrossCursor)
-
         self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, self)
         self.origin = QPoint()
 
@@ -35,51 +34,17 @@ class RegionSelector(QWidget):
             self.rubber_band.hide()
             rect = QRect(self.origin, event.pos()).normalized()
             self.close()
-
             if rect.width() > 10 and rect.height() > 10:
                 dpr = self.devicePixelRatio()
                 region = {
                     "top": int(rect.top() * dpr),
                     "left": int(rect.left() * dpr),
                     "width": int(rect.width() * dpr),
-                    "height": int(rect.height() * dpr)
+                    "height": int(rect.height() * dpr),
                 }
                 self.region_selected.emit(region)
             else:
                 self.selection_cancelled.emit()
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Escape:
-            self.close()
-            self.selection_cancelled.emit()
-
-
-class PointSelector(QWidget):
-    """Виджет для выбора одной точки кликом на экране."""
-    point_selected = pyqtSignal(dict)
-    selection_cancelled = pyqtSignal()
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.Tool
-        )
-        self.setWindowState(Qt.WindowState.WindowFullScreen)
-        self.setWindowOpacity(0.35)
-        self.setCursor(Qt.CursorShape.CrossCursor)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            dpr = self.devicePixelRatio()
-            pos = event.pos()
-            point = {
-                "x": int(pos.x() * dpr),
-                "y": int(pos.y() * dpr)
-            }
-            self.close()
-            self.point_selected.emit(point)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:

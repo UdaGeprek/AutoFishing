@@ -33,7 +33,7 @@ External fishing assistant for **Albion Online**: reads the screen with computer
 ## Installation
 
 ```bash
-git clone https://github.com/<user>/AutoFishing2.git
+git clone https://github.com/UdaGeprek/AutoFishing.git
 cd AutoFishing2
 python -m venv .venv
 .venv\Scripts\activate
@@ -107,13 +107,13 @@ Dark theme via **qdarktheme** with the original green/blue accent palette.
 ## Project structure
 
 ```text
-AutoFishing2/
-├── app.py               # PyQt6 UI (entry point)
-├── fishing_worker.py    # Fishing state machine
-├── settings.py          # Factory defaults & profiles
-├── translations.py      # EN / ID / FIL strings
-├── screen_vision.py     # Screen capture & color detection
-├── input_control.py     # Mouse & keyboard (WinAPI)
+AutoFishing/
+├── app.py
+├── fishing_worker.py
+├── settings.py
+├── translations.py
+├── screen_vision.py
+├── input_control.py
 ├── bait_automation.py
 ├── food_automation.py
 ├── region_picker.py
@@ -122,8 +122,6 @@ AutoFishing2/
 ├── widgets.py
 └── profiles/
 ```
-
-Legacy modules under `packet/` and `audio_detector.py` are not used by the current GUI.
 
 ---
 

@@ -4,12 +4,10 @@ import time
 
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
-
 KEYEVENTF_KEYUP = 0x0002
 KEYEVENTF_SCANCODE = 0x0008
 INPUT_KEYBOARD = 1
 
-# Virtual-key codes for common keys used by bait/inventory hotkeys
 VK_MAP = {
     "1": 0x31, "2": 0x32, "3": 0x33, "4": 0x34, "5": 0x35,
     "6": 0x36, "7": 0x37, "8": 0x38, "9": 0x39, "0": 0x30,
@@ -39,6 +37,7 @@ class _KEYBDINPUT(ctypes.Structure):
 class _INPUT(ctypes.Structure):
     class _INPUT_UNION(ctypes.Union):
         _fields_ = [("ki", _KEYBDINPUT)]
+
     _fields_ = [
         ("type", ctypes.wintypes.DWORD),
         ("union", _INPUT_UNION),
@@ -48,19 +47,13 @@ class _INPUT(ctypes.Structure):
 class InputHandler:
     @staticmethod
     def move_cursor(x, y):
-        """Аппаратное перемещение курсора мыши в физические координаты экрана."""
         ctypes.windll.user32.SetCursorPos(int(x), int(y))
 
     @staticmethod
     def click_mouse(x=None, y=None, delay=0.1):
-        """
-        Делает физический клик ЛКМ. 
-        Если переданы x и y — курсор автоматически перемещается в эту точку перед кликом.
-        """
         if x is not None and y is not None:
             InputHandler.move_cursor(x, y)
             time.sleep(0.05)
-
         ctypes.windll.user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
         time.sleep(delay)
         ctypes.windll.user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
@@ -78,23 +71,13 @@ class InputHandler:
 
     @staticmethod
     def press_key(key: str, hold_time: float = 0.05):
-        """Tekan dan lepas satu tombol keyboard via SendInput (WinAPI).
-
-        Args:
-            key: Nama tombol (misal '1', 'i', 'f1', 'escape') — case insensitive.
-            hold_time: Durasi tahan tombol (detik), default 50ms.
-        """
         vk = VK_MAP.get(key.lower())
         if vk is None:
-            # Fallback: coba konversi karakter ke VK via VkKeyScanW
             result = ctypes.windll.user32.VkKeyScanW(ord(key[0]))
             if result == -1:
-                return  # Key tidak dikenali
+                return
             vk = result & 0xFF
-
         scan = ctypes.windll.user32.MapVirtualKeyW(vk, 0)
-
-        # Key down
         inp_down = _INPUT()
         inp_down.type = INPUT_KEYBOARD
         inp_down.union.ki.wVk = vk
@@ -103,10 +86,7 @@ class InputHandler:
         inp_down.union.ki.time = 0
         inp_down.union.ki.dwExtraInfo = ctypes.pointer(ctypes.c_ulong(0))
         ctypes.windll.user32.SendInput(1, ctypes.byref(inp_down), ctypes.sizeof(_INPUT))
-
         time.sleep(hold_time)
-
-        # Key up
         inp_up = _INPUT()
         inp_up.type = INPUT_KEYBOARD
         inp_up.union.ki.wVk = vk

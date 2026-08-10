@@ -1,5 +1,3 @@
-"""Dark theme accents (original palette) on top of qdarktheme."""
-
 ACCENT_STYLESHEET = """
 QGroupBox {
     border: 1px solid #3a3a3a;
@@ -76,9 +74,15 @@ QTextEdit#logPanel {
 }
 """
 
+VIEWPORT_WATER_BORDER = "#2e7d32"
+VIEWPORT_BAR_BORDER = "#0288d1"
+WINDOW_WIDTH = 540
+WINDOW_HEIGHT = 1080
+VIEWPORT_W = 240
+VIEWPORT_H = 150
+
 
 def apply_app_theme(app):
-    """Apply qdarktheme + legacy accent overrides."""
     try:
         import qdarktheme
         qdarktheme.setup_theme("dark")
@@ -90,19 +94,8 @@ def apply_app_theme(app):
             app.setStyle("Fusion")
     app.setStyleSheet(app.styleSheet() + ACCENT_STYLESHEET)
 
-# Viewport border colors (original)
-VIEWPORT_WATER_BORDER = "#2e7d32"
-VIEWPORT_BAR_BORDER = "#0288d1"
-
-# Default window: narrow strip on the left (does not cover the game)
-WINDOW_WIDTH = 540
-WINDOW_HEIGHT = 1080
-VIEWPORT_W = 240
-VIEWPORT_H = 150
-
 
 def dock_window_left(window, width: int = WINDOW_WIDTH, preferred_height: int = WINDOW_HEIGHT) -> None:
-    """Place the window on the left edge of the primary screen."""
     from PyQt6.QtWidgets import QApplication
 
     app = QApplication.instance()
