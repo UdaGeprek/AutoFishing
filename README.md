@@ -136,7 +136,9 @@ AutoFishing/
 
 ## License & contributions
 
-See repository history and license. Bug fixes and documentation PRs welcome.
+MIT License — see [LICENSE](LICENSE).
+
+Bug fixes and documentation PRs welcome.
 
 ---
 
