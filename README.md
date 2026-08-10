@@ -34,7 +34,7 @@ External fishing assistant for **Albion Online**: reads the screen with computer
 
 ```bash
 git clone https://github.com/UdaGeprek/AutoFishing.git
-cd AutoFishing2
+cd AutoFishing
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
