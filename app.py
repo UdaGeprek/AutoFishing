@@ -4,7 +4,7 @@ import sys
 import cv2
 import numpy as np
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QImage, QKeySequence, QPixmap, QShortcut
+from PyQt6.QtGui import QImage, QKeySequence, QPixmap, QShortcut, QShowEvent
 from PyQt6.QtWidgets import (
     QApplication,
     QButtonGroup,
@@ -29,8 +29,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from bot_worker import BotWorker
-from config import (
+from fishing_worker import BotWorker
+from settings import (
     delete_profile,
     get_language,
     list_profiles,
@@ -41,10 +41,17 @@ from config import (
     save_language,
     save_profile,
 )
-from i18n import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, Translator
-from region_selector import RegionSelector
-from ui_theme import VIEWPORT_BAR_BORDER, VIEWPORT_WATER_BORDER, apply_app_theme
-from ui_widgets import InfoIcon
+from translations import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, Translator
+from region_picker import RegionSelector
+from theme import (
+    VIEWPORT_BAR_BORDER,
+    VIEWPORT_H,
+    VIEWPORT_W,
+    VIEWPORT_WATER_BORDER,
+    apply_app_theme,
+    dock_window_left,
+)
+from widgets import InfoIcon
 
 
 class ClickableLabel(QLabel):
@@ -92,11 +99,14 @@ class BotGUI(QMainWindow):
         self._loading_ui = False
         self._status_key = "paused"
         self.is_overlay = False
+        self._positioned = False
+        self._positioned = False
         meta = load_meta()
         self._active_saved_profile = meta.get("active_profile")
 
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
-        self.resize(920, 720)
+        self.setMinimumWidth(480)
+        self.setMaximumWidth(620)
 
         self.init_ui()
 
@@ -127,21 +137,38 @@ class BotGUI(QMainWindow):
         self.apply_translations()
         self._loading_ui = False
 
+    def showEvent(self, event: QShowEvent):
+        super().showEvent(event)
+        if not self.is_overlay and not self._positioned:
+            dock_window_left(self)
+            self._positioned = True
+
+    def showEvent(self, event: QShowEvent):
+        super().showEvent(event)
+        if not self.is_overlay and not self._positioned:
+            dock_window_left(self)
+            self._positioned = True
+
     def tr(self, key: str, **kwargs) -> str:
         return self.i18n.tr(key, **kwargs)
 
     # ------------------------------------------------------------------ UI build
     def init_ui(self):
         root = QWidget()
+        root.setObjectName("centralRoot")
         self.setCentralWidget(root)
         outer = QVBoxLayout(root)
-        outer.setSpacing(8)
+        outer.setContentsMargins(8, 8, 8, 8)
+        outer.setSpacing(6)
 
-        # Language bar
+        # Language bar (compact)
         lang_row = QHBoxLayout()
+        lang_row.setSpacing(6)
         self.lbl_lang = QLabel()
+        self.lbl_lang.setStyleSheet("font-weight: 600;")
         lang_row.addWidget(self.lbl_lang)
         self.combo_lang = QComboBox()
+        self.combo_lang.setMaximumWidth(130)
         for code, label in SUPPORTED_LANGUAGES.items():
             self.combo_lang.addItem(label, code)
         self.combo_lang.currentIndexChanged.connect(self.on_language_changed)
@@ -149,66 +176,81 @@ class BotGUI(QMainWindow):
         lang_row.addStretch()
         outer.addLayout(lang_row)
 
-        body = QHBoxLayout()
-        body.setSpacing(10)
-
-        # --- Left: live previews (fixed, no scroll) ---
-        preview = QVBoxLayout()
-        preview.setSpacing(6)
+        # Previews — side by side (fits 540px width, like original)
+        preview_row = QHBoxLayout()
+        preview_row.setSpacing(8)
         self._preview_heads = []
         for attr, border, handler in (
             ("viewport_water", VIEWPORT_WATER_BORDER, lambda x, y: self.handle_pipette_click("water", x, y)),
             ("viewport_bar", VIEWPORT_BAR_BORDER, lambda x, y: self.handle_pipette_click("bar", x, y)),
         ):
+            col = QVBoxLayout()
+            col.setSpacing(4)
             head = QHBoxLayout()
+            head.setSpacing(4)
             title = QLabel()
+            title.setAlignment(Qt.AlignmentFlag.AlignCenter)
             tip = InfoIcon("")
+            head.addStretch()
             head.addWidget(title)
             head.addWidget(tip)
             head.addStretch()
-            preview.addLayout(head)
+            col.addLayout(head)
             self._preview_heads.append((title, tip, attr))
 
             vp = ClickableLabel()
-            vp.setFixedSize(220, 130)
+            vp.setFixedSize(VIEWPORT_W, VIEWPORT_H)
             vp.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            vp.setStyleSheet(f"border: 2px solid {border}; background: #000; border-radius: 4px;")
+            vp.setStyleSheet(
+                f"border: 2px solid {border}; background: #000; border-radius: 4px;"
+            )
             vp.clicked_image_pos.connect(handler)
             setattr(self, attr, vp)
-            preview.addWidget(vp)
-        preview.addStretch()
-        body.addLayout(preview)
+            col.addWidget(vp, alignment=Qt.AlignmentFlag.AlignCenter)
+            preview_row.addLayout(col)
+        outer.addLayout(preview_row)
 
-        # --- Right: contextual tabs ---
+        # Tabs — full width below previews
         self.tabs = QTabWidget()
+        self.tabs.setUsesScrollButtons(True)
+        self.tabs.setDocumentMode(True)
         self._build_tab_dashboard()
         self._build_tab_regions()
         self._build_tab_fishing()
         self._build_tab_colors()
         self._build_tab_automation()
         self._build_tab_profiles()
-        body.addWidget(self.tabs, stretch=1)
-        outer.addLayout(body, stretch=1)
+        outer.addWidget(self.tabs, stretch=1)
 
-        # --- Bottom: stats + log ---
+        # Stats + log
         stats_row = QHBoxLayout()
+        stats_row.setSpacing(12)
         self.lbl_stats_session = QLabel()
         self.lbl_stats_total = QLabel()
         self.lbl_stats_rate = QLabel()
         self.lbl_stats_time = QLabel()
-        for lbl in (self.lbl_stats_session, self.lbl_stats_total, self.lbl_stats_rate, self.lbl_stats_time):
-            lbl.setStyleSheet("color: #4fc3f7; font-weight: bold; font-size: 11px;")
+        for lbl in (
+            self.lbl_stats_session,
+            self.lbl_stats_total,
+            self.lbl_stats_rate,
+            self.lbl_stats_time,
+        ):
+            lbl.setStyleSheet("color: #4fc3f7; font-weight: bold; font-size: 10px;")
             stats_row.addWidget(lbl)
         stats_row.addStretch()
         outer.addLayout(stats_row)
 
         self.log_output = QTextEdit()
         self.log_output.setObjectName("logPanel")
-        self.log_output.setFixedHeight(100)
+        self.log_output.setFixedHeight(90)
         self.log_output.setReadOnly(True)
         outer.addWidget(self.log_output)
 
     def _scroll_tab(self, widget: QWidget) -> QWidget:
+        widget_layout = widget.layout()
+        if widget_layout is not None:
+            widget_layout.setContentsMargins(4, 4, 4, 4)
+            widget_layout.setSpacing(6)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -262,14 +304,12 @@ class BotGUI(QMainWindow):
         reg = QVBoxLayout(self.grp_regions)
         self._tip_regions = InfoIcon("")
         reg.addWidget(self._tip_regions)
-        row = QHBoxLayout()
         self.btn_water = QPushButton()
         self.btn_water.clicked.connect(lambda: self.start_region_select("water_region"))
         self.btn_bar = QPushButton()
         self.btn_bar.clicked.connect(lambda: self.start_region_select("bar_region"))
-        row.addWidget(self.btn_water)
-        row.addWidget(self.btn_bar)
-        reg.addLayout(row)
+        reg.addWidget(self.btn_water)
+        reg.addWidget(self.btn_bar)
         cast_form = QFormLayout()
         self.spin_cast_power = QDoubleSpinBox()
         self.spin_cast_power.setRange(0.10, 2.00)
@@ -548,36 +588,47 @@ class BotGUI(QMainWindow):
         lay = QVBoxLayout(tab)
         self.grp_prof = QGroupBox()
         prof = QVBoxLayout(self.grp_prof)
-        row = QHBoxLayout()
+        prof.setSpacing(8)
+        row = QVBoxLayout()
+        head = QHBoxLayout()
         self.lbl_active_prof = QLabel()
         self._tip_profile = InfoIcon("")
-        row.addWidget(self.lbl_active_prof)
-        row.addWidget(self._tip_profile)
-        row.addStretch()
+        head.addWidget(self.lbl_active_prof)
+        head.addWidget(self._tip_profile)
+        head.addStretch()
+        row.addLayout(head)
         self.combo_profile = QComboBox()
-        row.addWidget(self.combo_profile, stretch=1)
+        row.addWidget(self.combo_profile)
         prof.addLayout(row)
-        btn_row = QHBoxLayout()
+
+        btn_row1 = QHBoxLayout()
+        btn_row1.setSpacing(6)
         self.btn_save_profile = QPushButton()
         self.btn_save_profile.setObjectName("btnPrimary")
         self.btn_save_profile.clicked.connect(self.on_save_profile)
         self.btn_new_profile = QPushButton()
         self.btn_new_profile.clicked.connect(self.on_new_profile)
-        self.btn_delete_profile = QPushButton()
-        self.btn_delete_profile.setObjectName("btnDanger")
-        self.btn_delete_profile.clicked.connect(self.on_delete_profile)
         self.btn_load_profile = QPushButton()
         self.btn_load_profile.setObjectName("btnGhost")
         self.btn_load_profile.clicked.connect(self.on_load_profile)
+        btn_row1.addWidget(self.btn_save_profile)
+        btn_row1.addWidget(self.btn_new_profile)
+        btn_row1.addWidget(self.btn_load_profile)
+
+        btn_row2 = QHBoxLayout()
+        btn_row2.setSpacing(6)
+        self.btn_delete_profile = QPushButton()
+        self.btn_delete_profile.setObjectName("btnDanger")
+        self.btn_delete_profile.clicked.connect(self.on_delete_profile)
         self.btn_reset_factory = QPushButton()
         self.btn_reset_factory.setObjectName("btnGhost")
         self.btn_reset_factory.clicked.connect(self.on_reset_factory)
-        for b in (
-            self.btn_save_profile, self.btn_new_profile, self.btn_delete_profile,
-            self.btn_load_profile, self.btn_reset_factory,
-        ):
-            btn_row.addWidget(b)
-        prof.addLayout(btn_row)
+        btn_row2.addWidget(self.btn_delete_profile)
+        btn_row2.addWidget(self.btn_reset_factory)
+        btn_row2.addStretch()
+
+        prof.addLayout(btn_row1)
+        prof.addLayout(btn_row2)
         self.lbl_dirty = QLabel()
         self.lbl_dirty.setObjectName("dirtyBanner")
         self.lbl_dirty.setWordWrap(True)
@@ -1028,6 +1079,8 @@ class BotGUI(QMainWindow):
             self.setWindowOpacity(1.0)
             self.log(self.tr("overlay_off"))
         self.show()
+        if not self.is_overlay:
+            dock_window_left(self)
 
     def start_region_select(self, region_key):
         self.hide()

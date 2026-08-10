@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import time
 import keyboard  # Импортируем библиотеку для глобальных хоткеев
-from vision import Vision
-from input_handler import InputHandler
+from screen_vision import Vision
+from input_control import InputHandler
 
 def main():
     vision = Vision()

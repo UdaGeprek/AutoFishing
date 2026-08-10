@@ -6,11 +6,11 @@ import cv2
 import numpy as np
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from vision import Vision
-from input_handler import InputHandler
-from bait_manager import BaitManager
-from food_manager import FoodManager
-from stats_tracker import StatsTracker
+from screen_vision import Vision
+from input_control import InputHandler
+from bait_automation import BaitManager
+from food_automation import FoodManager
+from stats import StatsTracker
 
 try:
     ctypes.windll.winmm.timeBeginPeriod(1)

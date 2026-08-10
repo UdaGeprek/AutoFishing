@@ -45,7 +45,7 @@ pip install -r requirements.txt
 ## Run
 
 ```bash
-python gui_main.py
+python app.py
 ```
 
 | Shortcut | Action |
@@ -77,7 +77,7 @@ Lower sensitivity = faster hook. Higher = waits longer (fewer false bites).
 
 ### 4. Profiles (tab **Profiles**)
 
-- **Factory default** = built-in settings in `config.py`.  
+- **Factory default** = built-in settings in `settings.py`.  
 - Click **Save profile** or **New profile** to keep changes after restart.  
 - Unsaved changes are lost on exit; startup uses the **last saved profile** or **factory default**.  
 - Files: `profiles/<name>.json`, meta: `profiles/_meta.json`.
@@ -108,17 +108,18 @@ Dark theme via **qdarktheme** with the original green/blue accent palette.
 
 ```text
 AutoFishing2/
-├── gui_main.py          # PyQt6 UI
-├── bot_worker.py        # Fishing state machine
-├── config.py            # Factory defaults & profiles
-├── i18n.py              # EN / ID / FIL strings
-├── vision.py            # Screen capture & color detection
-├── input_handler.py     # Mouse & keyboard (WinAPI)
-├── bait_manager.py
-├── food_manager.py
-├── region_selector.py
-├── stats_tracker.py
-├── ui_theme.py
+├── app.py               # PyQt6 UI (entry point)
+├── fishing_worker.py    # Fishing state machine
+├── settings.py          # Factory defaults & profiles
+├── translations.py      # EN / ID / FIL strings
+├── screen_vision.py     # Screen capture & color detection
+├── input_control.py     # Mouse & keyboard (WinAPI)
+├── bait_automation.py
+├── food_automation.py
+├── region_picker.py
+├── stats.py
+├── theme.py
+├── widgets.py
 └── profiles/
 ```
 

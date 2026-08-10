@@ -19,10 +19,17 @@ QTabWidget::pane {
     top: -1px;
 }
 QTabBar::tab {
-    padding: 8px 14px;
+    padding: 6px 10px;
     margin-right: 2px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    min-width: 48px;
+}
+QTabBar::scroller {
+    width: 20px;
+}
+QMainWindow, QWidget#centralRoot {
+    background-color: #1e1e1e;
 }
 QPushButton#btnPrimary {
     background-color: #2e7d32;
@@ -86,3 +93,25 @@ def apply_app_theme(app):
 # Viewport border colors (original)
 VIEWPORT_WATER_BORDER = "#2e7d32"
 VIEWPORT_BAR_BORDER = "#0288d1"
+
+# Default window: narrow strip on the left (does not cover the game)
+WINDOW_WIDTH = 540
+WINDOW_HEIGHT = 1080
+VIEWPORT_W = 240
+VIEWPORT_H = 150
+
+
+def dock_window_left(window, width: int = WINDOW_WIDTH, preferred_height: int = WINDOW_HEIGHT) -> None:
+    """Place the window on the left edge of the primary screen."""
+    from PyQt6.QtWidgets import QApplication
+
+    app = QApplication.instance()
+    screen = app.primaryScreen() if app else None
+    if screen is None:
+        window.resize(width, preferred_height)
+        window.move(0, 0)
+        return
+    geo = screen.availableGeometry()
+    height = min(preferred_height, geo.height())
+    window.resize(width, height)
+    window.move(geo.x(), geo.y())

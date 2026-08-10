@@ -1,6 +1,6 @@
 import time
 
-from input_handler import InputHandler
+from input_control import InputHandler
 
 
 class FoodManager:
