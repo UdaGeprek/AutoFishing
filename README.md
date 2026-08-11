@@ -128,7 +128,7 @@ AutoFishing/
 ## Tips
 
 - Keep resolution and UI scale the same as when you calibrated.  
-- Re-pipette colors if lighting changes (day/night, weather).  
+- Re-pipette colors if environment changes 
 - Start with medium bite sensitivity; increase if you get false hook sets.  
 - **Assist mode** works well if you prefer manual bite detection.
 
